@@ -1,3 +1,1 @@
-#Medical Chatbot
-
-almighty check
+Medical Chatbot

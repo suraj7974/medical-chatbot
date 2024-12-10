@@ -3,3 +3,5 @@ sentence-transformers==2.2.2
 pinecode-cli
 langchain==0.0.225
 flask
+langchain-huggingface
+langchain-ollama

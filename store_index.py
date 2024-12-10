@@ -14,11 +14,6 @@ extracted_data = load_pdf("data/")
 text_chunks = text_split(extracted_data)
 embeddings = download_hugging_face_embeddings()
 
-
-extracted_data = load_pdf("data/")
-text_chunks = text_split(extracted_data)
-embeddings = download_hugging_face_embeddings()
-
 pc = Pinecone(api_key=PINECONE_API_KEY)
 
 index_name = "medicalbot"
@@ -33,9 +28,7 @@ pc.create_index(
     )
 )
 
-
 docsearch = PineconeVectorStore.from_documents(
     documents = text_chunks,
-    index_name = index_name,
     embedding = embeddings
 )

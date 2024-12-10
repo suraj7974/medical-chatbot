@@ -45,10 +45,12 @@
             </div>
             <div id="messageFormeight" class="card-body msg_card_body"></div>
             <div class="card-footer">
-              <form id="messageArea" class="input-group">
-                <input type="text" id="text" name="msg" placeholder="Type your message..." autocomplete="off" class="form-control type_msg" required />
-                <div class="input-group-append">
-                  <button type="submit" id="send" class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></button>
+              <form id="messageArea" class="card-footer">
+                <div class="input-group">
+                  <input type="text" id="text" name="msg" class="form-control type_msg" placeholder="Type your message..." />
+                  <div class="input-group-append">
+                    <button class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></button>
+                  </div>
                 </div>
               </form>
             </div>
@@ -60,6 +62,8 @@
     <script>
       $(document).ready(function () {
         $("#messageArea").on("submit", function (event) {
+          event.preventDefault();
+
           const date = new Date();
           const hour = date.getHours();
           const minute = date.getMinutes();
@@ -81,7 +85,7 @@
               msg: rawText,
             },
             type: "POST",
-            url: "/get",
+            url: "/chat",
           }).done(function (data) {
             var botHtml =
               '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://www.prdistribution.com/spirit/uploads/pressreleases/2019/newsreleases/d83341deb75c4c4f6b113f27b1e42cd8-chatbot-florence-already-helps-thousands-of-patients-to-remember-their-medication.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' +
@@ -91,7 +95,6 @@
               "</span></div></div>";
             $("#messageFormeight").append($.parseHTML(botHtml));
           });
-          event.preventDefault();
         });
       });
     </script>

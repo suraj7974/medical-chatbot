@@ -6,16 +6,13 @@ from dotenv import load_dotenv
 import os
 import logging
 
-# Configure Logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
 
-# Initialize Pinecone Vector Store
 PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
 if not PINECONE_API_KEY:
     logger.error("PINECONE_API_KEY not found in environment variables.")
@@ -36,17 +33,14 @@ except Exception as e:
 
 retriever = docsearch.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 
-# Initialize Groq API key
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 if not GROQ_API_KEY:
     logger.error("GROQ_API_KEY not found in environment variables.")
     raise ValueError("GROQ_API_KEY not found in environment variables.")
 os.environ["GROQ_API_KEY"] = GROQ_API_KEY
 
-# Initialize Groq client
 groq_client = Groq(api_key=GROQ_API_KEY)
 
-# Prompts for classification, general queries, and medical processing
 CLASSIFICATION_PROMPT = """
 You are an intelligent assistant tasked with classifying user queries. 
 Your job is to decide if a query is:
@@ -60,18 +54,32 @@ Query: {query}
 """
 
 GENERAL_PROMPT = """
-You are a conversational AI assistant. Respond appropriately to general queries in a friendly and informative manner.
+You are a medical assistant chatbot. Your role is to provide medical-related information and assistance. 
+You should only respond to general queries like greetings ("hello", "hi") or polite conversational phrases ("how are you?", "thank you").
+
+For any other general query or non-medical question (e.g., 'What is Ferrari?', 'Who is the president?'), politely inform the user:
+- "I am here to assist with medical-related questions only. Please ask me something related to health or medicine."
+
+Examples:
+- Input: "Hello"
+  Response: "Hello! How can I assist you with medical-related questions today?"
+- Input: "How are you?"
+  Response: "I'm doing well, thank you for asking! How can I assist with your medical concerns today?"
+- Input: "What is Ferrari?"
+  Response: "I am here to help with medical-related questions only. Please let me know if you have any health concerns."
 """
+
 
 IRRELEVANT_PROMPT = """
 You are a conversational AI assistant. For irrelevant or out-of-scope queries, politely let the user know you cannot assist with their request.
 """
 
 STRUCTURE_PROMPT = """
-You are a helpful AI assistant. Structure the following medical query into a clear, concise format suitable for retrieving relevant context.
+You are a medical assistant AI. Ensure the user's medical query is passed as-is without modifying its content. 
 
 Query: {query}
 """
+
 
 FINAL_RESPONSE_PROMPT = """
 You are an AI medical assistant. Based on the context provided below, create a clear, well-structured, and comprehensive response to the user's query. 
@@ -99,7 +107,6 @@ def chat():
 
         logger.debug(f"Received message: {msg}")
 
-        # Step 1: Classify the query
         classification_message = [{"role": "system", "content": CLASSIFICATION_PROMPT.format(query=msg)}]
         try:
             classification_response = groq_client.chat.completions.create(
@@ -108,7 +115,6 @@ def chat():
                 temperature=0.0,
                 max_tokens=10
             )
-            # Normalize classification result
             raw_classification_result = classification_response.choices[0].message.content.strip()
             classification_result = raw_classification_result.strip('"').lower()
             logger.debug(f"Raw classification result: {raw_classification_result}")
@@ -117,8 +123,8 @@ def chat():
             logger.error(f"Error in query classification: {e}")
             return "Sorry, I encountered an error processing your request.", 500
 
-        # Step 2: Handle General Query
         if classification_result == "general query":
+            print("Query classified as: General Query")  
             general_message = [
                 {"role": "system", "content": GENERAL_PROMPT},
                 {"role": "user", "content": f"Query: {msg}"}
@@ -138,6 +144,7 @@ def chat():
                 return "Sorry, I encountered an error processing your request.", 500
 
         elif classification_result == "irrelevant query":
+            print("Query classified as: Irrelevant Query")  
             irrelevant_message = [
                 {"role": "system", "content": IRRELEVANT_PROMPT},
                 {"role": "user", "content": f"Query: {msg}"}
@@ -157,7 +164,7 @@ def chat():
                 return "Sorry, I encountered an error processing your request.", 500
 
         elif classification_result == "medical query":
-            # Step 4.1: Structure the query
+            print("Query classified as: Medical Query")  
             structure_message = [
                 {"role": "system", "content": STRUCTURE_PROMPT.format(query=msg)}
             ]
@@ -174,11 +181,9 @@ def chat():
                 logger.error(f"Error in structuring query: {e}")
                 return "Sorry, I encountered an error processing your request.", 500
 
-            # Step 4.2: Retrieve context from Pinecone
             docs = retriever.get_relevant_documents(structured_query)
             context = "\n".join([doc.page_content for doc in docs])
 
-            # Step 4.3: Generate final response using context
             final_response_message = [
                 {"role": "system", "content": FINAL_RESPONSE_PROMPT.format(context=context, query=structured_query)}
             ]
@@ -197,7 +202,7 @@ def chat():
                 return "Sorry, I encountered an error processing your request.", 500
 
         else:
-            # Step 5: Fallback response for unexpected classification result
+            print("Query classified as: Unexpected Classification") 
             logger.warning(f"Unexpected classification result: {classification_result}")
             return "Sorry, I couldn't classify your query. Please try again.", 400
 

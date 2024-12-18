@@ -116,12 +116,19 @@ def chat():
                 max_tokens=10
             )
             raw_classification_result = classification_response.choices[0].message.content.strip()
-            classification_result = raw_classification_result.strip('"').lower()
+            classification_result = raw_classification_result.strip('"').strip("'").lower().strip()
             logger.debug(f"Raw classification result: {raw_classification_result}")
             logger.debug(f"Normalized classification result: {classification_result}")
         except Exception as e:
             logger.error(f"Error in query classification: {e}")
             return "Sorry, I encountered an error processing your request.", 500
+
+        if any(x in classification_result for x in ["medical", "medical query"]):
+            classification_result = "medical query"
+        elif any(x in classification_result for x in ["general", "general query"]):
+            classification_result = "general query"
+        elif any(x in classification_result for x in ["irrelevant", "irrelevant query"]):
+            classification_result = "irrelevant query"
 
         if classification_result == "general query":
             print("Query classified as: General Query")  

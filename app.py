@@ -196,6 +196,25 @@ def chat():
         logger.error(f"Error in chat route: {e}")
         return "Sorry, I encountered an error processing your request.", 500
 
+@app.route('/process-voice', methods=['POST'])
+def process_voice():
+    try:
+        voice_text = request.json.get('text', '')
+        if not voice_text:
+            logger.warning("No voice text received in the request.")
+            return "No voice input received.", 400
+
+        # Use the existing chat logic
+        logger.debug(f"Received voice text: {voice_text}")
+        
+        # Simulate a form request by creating a custom Request object
+        with app.test_request_context('/chat', method='POST', data={'msg': voice_text}):
+            return chat()
+
+    except Exception as e:
+        logger.error(f"Error in voice processing: {e}")
+        return "Sorry, I encountered an error processing your voice input.", 500
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=8080, debug=True)

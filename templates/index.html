@@ -128,6 +128,49 @@
         opacity: 0.3;
         transition: 0s;
       }
+
+      #voiceButton {
+        padding: 10px 20px;
+        margin: 10px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      #voiceButton.listening {
+        background-color: #f44336;
+      }
+
+      .voice-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .voice-btn.listening {
+        background-color: #f44336;
+        animation: pulseAnimation 1.5s infinite;
+      }
+
+      @keyframes pulseAnimation {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
     </style>
   </head>
 
@@ -181,6 +224,10 @@
                 <!-- Update send button to remove glow animation -->
                 <button type="submit" class="ripple px-4 py-2 bg-indigo-500 hover:bg-indigo-600 rounded-full text-white transition-colors">
                   <i class="fas fa-location-arrow"></i>
+                </button>
+                <button type="button" class="voice-btn" onclick="toggleVoiceRecognition()">
+                  <i class="fas fa-microphone"></i>
+                  <span>Voice Input</span>
                 </button>
               </form>
             </div>
@@ -320,6 +367,76 @@
       });
 
       // Remove all greeting related code
+
+      let recognition = null;
+      let isListening = false;
+
+      // Initialize speech recognition
+      function initSpeechRecognition() {
+        try {
+          window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+          recognition = new window.SpeechRecognition();
+          recognition.continuous = false;
+          recognition.lang = "en-US";
+          recognition.interimResults = false;
+          recognition.maxAlternatives = 1;
+
+          recognition.onstart = function () {
+            console.log("Speech recognition started");
+            isListening = true;
+            $(".voice-btn").addClass("listening");
+            $(".voice-btn span").text("Listening...");
+          };
+
+          recognition.onresult = function (event) {
+            const voiceText = event.results[0][0].transcript;
+            console.log("Voice input:", voiceText);
+            $("#text").val(voiceText);
+            $("#messageArea").submit();
+          };
+
+          recognition.onerror = function (event) {
+            console.error("Speech recognition error:", event.error);
+            stopListening();
+          };
+
+          recognition.onend = function () {
+            console.log("Speech recognition ended");
+            stopListening();
+          };
+        } catch (e) {
+          console.error("Speech recognition not supported:", e);
+          alert("Speech recognition is not supported in this browser.");
+        }
+      }
+
+      function stopListening() {
+        isListening = false;
+        $(".voice-btn").removeClass("listening");
+        $(".voice-btn span").text("Voice Input");
+      }
+
+      function toggleVoiceRecognition() {
+        if (!recognition) {
+          initSpeechRecognition();
+        }
+
+        try {
+          if (!isListening) {
+            recognition.start();
+          } else {
+            recognition.stop();
+          }
+        } catch (e) {
+          console.error("Error toggling voice recognition:", e);
+          stopListening();
+        }
+      }
+
+      // Initialize speech recognition when the page loads
+      $(document).ready(function () {
+        initSpeechRecognition();
+      });
     </script>
   </body>
 </html>

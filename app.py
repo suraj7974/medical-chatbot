@@ -74,15 +74,8 @@ IRRELEVANT_PROMPT = """
 You are a conversational AI assistant. For irrelevant or out-of-scope queries, politely let the user know you cannot assist with their request.
 """
 
-STRUCTURE_PROMPT = """
-You are a medical assistant AI. Ensure the user's medical query is passed as-is without modifying its content. 
-
-Query: {query}
-"""
-
-
 FINAL_RESPONSE_PROMPT = """
-You are an AI medical assistant. Based on the context provided below, create a clear, well-structured, and comprehensive response to the user's query. 
+You are an AI medical assistant. Based on the context provided below, create a clear, well-structured, and comprehensive response to the user's queryand note that it should be meaningfull and not like its not making sence according to the question asked. 
 Always prioritize user safety and recommend consulting a healthcare professional when necessary.
 
 Context:
@@ -172,27 +165,13 @@ def chat():
 
         elif classification_result == "medical query":
             print("Query classified as: Medical Query")  
-            structure_message = [
-                {"role": "system", "content": STRUCTURE_PROMPT.format(query=msg)}
-            ]
-            try:
-                structured_response = groq_client.chat.completions.create(
-                    messages=structure_message,
-                    model="mixtral-8x7b-32768",
-                    temperature=0.5,
-                    max_tokens=50
-                )
-                structured_query = structured_response.choices[0].message.content.strip()
-                logger.debug(f"Structured query: {structured_query}")
-            except Exception as e:
-                logger.error(f"Error in structuring query: {e}")
-                return "Sorry, I encountered an error processing your request.", 500
-
-            docs = retriever.get_relevant_documents(structured_query)
+            
+            # Use original msg directly
+            docs = retriever.get_relevant_documents(msg)
             context = "\n".join([doc.page_content for doc in docs])
 
             final_response_message = [
-                {"role": "system", "content": FINAL_RESPONSE_PROMPT.format(context=context, query=structured_query)}
+                {"role": "system", "content": FINAL_RESPONSE_PROMPT.format(context=context, query=msg)}
             ]
             try:
                 final_response = groq_client.chat.completions.create(

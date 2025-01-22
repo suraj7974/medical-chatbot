@@ -6,6 +6,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" />
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script>
       tailwind.config = {
@@ -48,143 +49,16 @@
         },
       };
     </script>
-    <style>
-      /* Custom scrollbar */
-      .scrollbar-thin::-webkit-scrollbar {
-        width: 6px;
-      }
-      .scrollbar-thin::-webkit-scrollbar-thumb {
-        background: #667eea;
-        border-radius: 3px;
-      }
-
-      .bot-container {
-        cursor: pointer;
-        transition: transform 0.3s ease;
-      }
-
-      .bot-container:hover {
-        transform: scale(1.1);
-        filter: brightness(1.1);
-      }
-
-      @keyframes pulse {
-        0%,
-        100% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.05);
-        }
-      }
-
-      /* Add typing animation for bot messages */
-      .typing-animation::after {
-        content: "...";
-        animation: typing 1.4s infinite;
-      }
-
-      @keyframes typing {
-        0%,
-        20% {
-          content: ".";
-        }
-        40% {
-          content: "..";
-        }
-        60% {
-          content: "...";
-        }
-        80%,
-        100% {
-          content: "";
-        }
-      }
-
-      /* Ripple effect for buttons */
-      .ripple {
-        position: relative;
-        overflow: hidden;
-      }
-
-      .ripple:after {
-        content: "";
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        pointer-events: none;
-        background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
-        background-repeat: no-repeat;
-        background-position: 50%;
-        transform: scale(10, 10);
-        opacity: 0;
-        transition: transform 0.5s, opacity 1s;
-      }
-
-      .ripple:active:after {
-        transform: scale(0, 0);
-        opacity: 0.3;
-        transition: 0s;
-      }
-
-      #voiceButton {
-        padding: 10px 20px;
-        margin: 10px;
-        background-color: #4caf50;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-      }
-      #voiceButton.listening {
-        background-color: #f44336;
-      }
-
-      .voice-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background-color: #4caf50;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 20px;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-
-      .voice-btn.listening {
-        background-color: #f44336;
-        animation: pulseAnimation 1.5s infinite;
-      }
-
-      @keyframes pulseAnimation {
-        0% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.05);
-        }
-        100% {
-          transform: scale(1);
-        }
-      }
-    </style>
   </head>
 
   <body class="font-poppins min-h-screen bg-gradient-to-br from-gray-100 to-gray-300">
     <div class="container mx-auto px-4 h-screen">
-      <!-- Removed the top-left image div -->
       <div class="flex justify-center h-full">
         <div class="w-full md:w-3/4 lg:w-1/2 py-6">
           <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-            <!-- Header with fixed image -->
             <div class="bg-gradient-to-r from-indigo-500 to-purple-600 p-4">
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                  <!-- Bot image container with permanent float animation -->
                   <div class="bot-container relative mr-4 flex-shrink-0 w-12 h-12 animate-float">
                     <img
                       src="https://cdn-icons-png.flaticon.com/512/4712/4712038.png"
@@ -208,10 +82,8 @@
               </div>
             </div>
 
-            <!-- Chat Area -->
             <div id="messageFormeight" class="h-[60vh] overflow-y-auto bg-gray-50 p-6 scrollbar-thin"></div>
 
-            <!-- Input Area -->
             <div class="p-4 bg-white border-t">
               <form id="messageArea" class="flex items-center space-x-2">
                 <input
@@ -221,7 +93,6 @@
                   class="flex-1 px-4 py-2 rounded-full border focus:outline-none focus:border-indigo-500 transition-colors"
                   placeholder="Type your message..."
                 />
-                <!-- Update send button to remove glow animation -->
                 <button type="submit" class="ripple px-4 py-2 bg-indigo-500 hover:bg-indigo-600 rounded-full text-white transition-colors">
                   <i class="fas fa-location-arrow"></i>
                 </button>
@@ -238,7 +109,6 @@
 
     <script>
       $(document).ready(function () {
-        // Add chat history management
         let chatHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
         let currentChatId = localStorage.getItem("currentChatId") || Date.now();
 
@@ -270,17 +140,13 @@
           localStorage.setItem("currentChatId", currentChatId);
         }
 
-        // New Chat button handler
         $("#newChatBtn").click(function () {
           currentChatId = Date.now();
           $("#messageFormeight").empty();
           saveMessages();
         });
 
-        // Load initial messages
         loadSavedMessages();
-
-        // Load saved messages when page loads
         loadSavedMessages();
 
         function loadSavedMessages() {
@@ -320,7 +186,7 @@
 
           $("#text").val("");
           $("#messageFormeight").append(userHtml);
-          saveMessages(); // Save after adding user message
+          saveMessages();
 
           $.ajax({
             data: { msg: rawText },
@@ -340,21 +206,19 @@
               </div>
             `;
               $("#messageFormeight").append($.parseHTML(botHtml));
-              saveMessages(); // Save after adding bot response
+              saveMessages();
             })
             .fail(function (jqXHR, textStatus, errorThrown) {
               console.error("AJAX Error: ", textStatus, errorThrown);
             });
         });
 
-        // Add clear chat button (optional)
         const clearButton = $(`
           <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full text-sm ml-2">
             Clear Chat
           </button>
         `).appendTo("#messageArea");
 
-        // Modify the clear button to clear current chat immediately
         clearButton.click(function (e) {
           e.preventDefault();
           $("#messageFormeight").empty();
@@ -366,12 +230,9 @@
         });
       });
 
-      // Remove all greeting related code
-
       let recognition = null;
       let isListening = false;
 
-      // Initialize speech recognition
       function initSpeechRecognition() {
         try {
           window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -433,7 +294,6 @@
         }
       }
 
-      // Initialize speech recognition when the page loads
       $(document).ready(function () {
         initSpeechRecognition();
       });

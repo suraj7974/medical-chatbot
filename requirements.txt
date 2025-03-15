@@ -5,3 +5,6 @@ langchain
 flask
 langchain-huggingface
 langchain-ollama
+langchain_community
+langchain_pinecone
+groq

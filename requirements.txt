@@ -1,6 +1,6 @@
 ctransformers==0.2.5
 sentence-transformers==2.2.2
-pinecode-cli
+pinecone-cli
 langchain==0.0.225
 flask
 langchain-huggingface
